@@ -15,67 +15,6 @@ URL_PREFIFX = "http://121.78.237.160:8080" #"keti3.oktree.com"
 PATH_REP = {"/": "_", "-": "_", " ": "_", ".": "_"}
 PATH_PREFIX = "VTT_"
 
-def read_vtt_data(sensor, start_time, end_time):
-    global URL_PREFIFX
-
-    filename = VTT_BIN_FOLDER + sensor + ".bin"
-
-    req_url = URL_PREFIFX + "/dashboard/query/?start=" + \
-              start_time.strftime('%Y/%m/%d-%H:%M:%S') + \
-              "&end=" + end_time.strftime('%Y/%m/%d-%H:%M:%S') + \
-              "&m=avg:"+sensor+"&ascii"
-    print "Retreving " + sensor + " data..."
-
-    lines = urllib2.urlopen(req_url).read().split("\n")
-    times = []
-    values = []
-
-    def _parse_data_line(data_line):
-        pt = shlex.split(data_line)
-        if len(pt) > 1:
-            ltime = datetime.fromtimestamp(int(pt[1]))
-
-            if start_time <= ltime < end_time:
-                stime = ltime.strftime('%Y-%m-%d %H:%M:%S')
-                dtime = str2datetime(stime)
-                dt = dtime.timetuple()
-
-                times.append([dtime, dt[5], dt[4], dt[3], dt[6], dt[2], dt[1]])
-                values.append(float(pt[2]))
-
-    def _merge(filepath, addl):
-        pass
-
-        """
-        try:
-            orig = dill_load_obj(filepath)
-        except:
-            #import traceback;print traceback.print_exc()
-            return None
-        finally:
-            ## concatenate two objects
-            return {'ts': np.vstack((orig['ts'], addl['ts'])),
-                    'value': np.hstack((orig['value'], addl['value']))}
-        """
-
-    try:
-        map(lambda dl: _parse_data_line(dl), lines)
-    finally:
-        data = {"ts": np.array(times), "value": np.array(values)}
-
-#        if os.path.isfile(filename):
-#            data = _merge(filename, data)
-
-        if data:
-            saveObjectBinaryFast(data, filename)
-
-
-
-
-
-
-
-
 def load_finland_ids():
     with open('finland_ids.csv', 'r') as f:
         lines = f.readlines()
